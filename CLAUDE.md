@@ -135,3 +135,20 @@ When starting a task:
 - Refer to `docs/ADR/` for detailed Architecture Decision Records:
   - **ADR-001**: App Sandbox vs. Terminal Functionality
   - **ADR-002**: MVVM Architecture with SwiftData
+
+## Maintenance
+
+Keep this file concise and token-efficient:
+- **Redundancy**: Remove duplicate explanations or alternative commands (keep one recommended approach)
+- **Organization**: Group similar information together; use tables for quick reference
+- **Clarity**: Preserve all critical guidance, but remove verbose prose
+- **Future Content**: Remove placeholder sections for "future" features or empty directories
+
+Review this file when:
+- It exceeds 150 lines and contains 3+ similar sections
+- New technologies are adopted (update Quick Start table, Architecture sections)
+- Workflow or process changes (update Development Workflow section)
+- New architectural decisions are documented (reference in Architectural Decisions, not embedding)
+
+Token efficiency matters—every line in CLAUDE.md is loaded into Claude Code's system prompt
+on every interaction.
