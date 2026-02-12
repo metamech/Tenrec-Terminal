@@ -2,138 +2,136 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Quick Start
 
-Tenrec Terminal is a SwiftUI-based macOS/iOS application using modern Apple frameworks:
-- **UI Framework:** SwiftUI
-- **Data Persistence:** SwiftData
-- **Testing Framework:** Swift Testing (not XCTest)
-- **Terminal Emulation:** SwiftTerm (v1.10.1+)
-- **Minimum Deployment:** macOS 26.2, iOS 26.2
-- **Build System:** Xcode 26.2+
-- **GitHub:** metamech/Tenrec-Terminal
+**Tenrec Terminal**: SwiftUI-based macOS/iOS terminal application
 
-## Building and Running
+| Aspect | Details |
+|--------|---------|
+| UI Framework | SwiftUI |
+| Data Persistence | SwiftData |
+| Testing | Swift Testing (not XCTest) |
+| Terminal Engine | SwiftTerm v1.10.1+ |
+| Min Deployment | macOS 26.2, iOS 26.2 |
+| Build System | Xcode 26.2+ |
+| Repository | metamech/Tenrec-Terminal |
 
-**Using Makefile (recommended):**
+**Build & Test:**
 ```bash
-make build        # Build the application
-make run          # Build and launch the application
-make clean        # Clean build artifacts
+make build    # Build the application
+make run      # Build and launch
+make test     # Run all tests
+make clean    # Clean build artifacts
 ```
 
-**Using xcodebuild directly:**
-```bash
-xcodebuild -scheme "Tenrec Terminal" -configuration Debug
-xcodebuild -scheme "Tenrec Terminal" -configuration Release
-```
+## Architecture
 
-## Testing
+### Project Structure
 
-**Using Makefile (recommended):**
-```bash
-make test         # Run all tests (unit + UI)
-```
-
-**Using xcodebuild directly:**
-```bash
-xcodebuild test -scheme "Tenrec Terminal"
-```
-
-## Code Architecture
-
-### MVVM Folder Structure
 ```
 Tenrec Terminal/
 ├── Models/              — SwiftData models
 │   └── TerminalSession.swift
-├── ViewModels/          — View models (future)
-├── Views/               — SwiftUI views
+├── ViewModels/          — View-specific logic
+├── Views/               — SwiftUI components
 │   ├── ContentView.swift
-│   └── Terminal/        — Terminal-specific views (future)
+│   └── Terminal/        — Terminal-specific views
 ├── Services/            — Business logic and utilities
 │   └── ShellExecutionPoC.swift
-├── Utilities/           — Helper utilities (future)
+├── Utilities/           — Helper utilities
 ├── Assets.xcassets/     — App icons and colors
 └── Tenrec_TerminalApp.swift — App entry point
 ```
 
+### MVVM Pattern
+
+- **Models** (`Models/`): SwiftData entities
+- **ViewModels** (`ViewModels/`): View-specific logic
+- **Views** (`Views/`): SwiftUI components, organized by feature
+- **Services** (`Services/`): Business logic, PTY handling, shell execution
+
 ### Data Models
 
-**TerminalSession** (`Models/TerminalSession.swift`)
-- SwiftData `@Model` for persisting terminal session state
-- Properties:
-  - `id: UUID` — Unique session identifier
-  - `name: String` — User-facing session name
-  - `createdAt: Date` — Session creation timestamp
-  - `status: SessionStatus` — Current session state (active/inactive/terminated)
-  - `workingDirectory: String` — Shell working directory (defaults to "~")
+**TerminalSession** — SwiftData model in `Models/TerminalSession.swift`
 
-**SessionStatus** (enum in `TerminalSession.swift`)
+| Property | Type | Description |
+|----------|------|-------------|
+| id | UUID | Unique session identifier |
+| name | String | User-facing session name |
+| createdAt | Date | Session creation timestamp |
+| status | SessionStatus | Session state: `active`, `inactive`, or `terminated` |
+| workingDirectory | String | Shell working directory (default: "~") |
+
+**SessionStatus** — Enum in `Models/TerminalSession.swift`
 - `active` — Session is running
 - `inactive` — Session is paused or backgrounded
 - `terminated` — Session has ended
 
-### Key Architectural Patterns
+### Key Patterns
 
-**SwiftData Integration:**
-- Models use `@Model` decorator for SwiftData persistence
+**SwiftData Integration**
+- Models use `@Model` decorator for persistence
 - App container initialized in `Tenrec_TerminalApp` with schema
 - Data persisted to disk by default (not in-memory)
 - Previews use in-memory containers to avoid affecting real data
 
-**MVVM Pattern:**
-- Models: SwiftData entities in `Models/`
-- ViewModels: Future view-specific logic in `ViewModels/`
-- Views: SwiftUI views in `Views/`, organized by feature
-- Services: Business logic, PTY handling, shell execution in `Services/`
-
-**Testing:**
+**Testing**
 - Unit tests use Swift Testing framework (`@Test` macro)
 - UI tests use XCTest for automation
 - PoC validation tests ensure sandbox is disabled for terminal functionality
 
+## Development Workflow
 
-## Planning
+### 1. Planning Phase
 
-1. Summarize relevant code and current behavior.
-2. Ask clarifying questions with recommendations based on codebase conventions.
+When starting a task:
+1. Summarize relevant code and current behavior
+2. Ask clarifying questions with recommendations based on codebase conventions
 3. Propose a phased plan. For each phase specify:
- - Purpose and scope
- - Files/functions to change
- - Tests to add or update
- - Recommended Claude model (opus/sonnet/haiku) with rationale
-4. Note edge cases and performance considerations where non-obvious.
+   - Purpose and scope
+   - Files/functions to change
+   - Tests to add or update
+   - Recommended Claude model (opus/sonnet/haiku) with rationale
+4. Note edge cases and performance considerations where non-obvious
 
-## GitHub Integration
+**Before implementing**, enter plan mode and wait for explicit approval.
 
-- If linked to an existing issue:
-  - update the final plan on the issue when it diverges from the description
-  - technical details in the issue are "pseudo code guidance" and not hard requirements unless explicitly declared as a strict requirement
-- If no issue exists, create one before implementation begins.
+### 2. GitHub Integration
 
-## Implementation Protocol
+**If linked to an existing issue:**
+- Update the final plan on the issue if it diverges from the description
+- Treat technical details in the issue as "pseudo code guidance" (not hard requirements unless explicitly marked)
 
-- Do not write code until I say "implement."
-- Create and checkout a feature branch from `main` before starting in a "phase 0".
-- feature branch naming convention "<type>/X-<slug>" where `<type>` is issue/task type (feature, bugfix, docs, etc), `X` is the GitHub Issue number, and `<slug>` is a short description/title.
-- Commit after each phase.
-- **Before starting each phase** (including the first), output the phase number, its recommended model, and ask: "Ready to proceed with Phase N? (switch to /model <X> if needed)" then STOP and wait for my explicit go-ahead. Do NOT continue until I respond.
-- Only implement one phase per response. After committing a phase, stop and prompt me for the next phase.
+**If no issue exists:**
+- Create one before implementation begins
 
-## Constraints
+### 3. Implementation Phase
 
-- Pre-release: no data migrations or legacy compatibility needed.
+**Branch & Commits:**
+- Create and checkout a feature branch from `main` before starting phase 0
+- Feature branch naming: `<type>/X-<slug>` where:
+  - `<type>` = issue type (feature, bugfix, docs, etc.)
+  - `X` = GitHub Issue number
+  - `<slug>` = short description
+- Commit after each phase
+
+**Phase Execution:**
+- **Before each phase** (including the first), output the phase number, recommended model, and ask: "Ready to proceed with Phase N? (switch to /model <X> if needed)" then **STOP**
+- Wait for explicit go-ahead before continuing
+- Implement only one phase per response
+- After committing a phase, stop and prompt for the next phase
 
 ## Important Notes
 
-- SwiftData schema is defined in `Tenrec_TerminalApp` — changes to models should be reflected there
+**Schema & Data**
+- SwiftData schema is defined in `Tenrec_TerminalApp` — changes to models must be reflected there
 - Previews use in-memory data stores to avoid affecting real data during development
-- The model context is automatically provided by SwiftUI's environment
+- Model context is automatically provided by SwiftUI's environment
 
-## Architectural Decisions
+**Pre-Release Constraints**
+- No data migrations or legacy compatibility needed
 
-Architecture Decision Records (ADRs) document important design decisions, their context, rationale, and consequences. Refer to the documents in `docs/ADR/` for full details.
-
-- **ADR-001**: App Sandbox vs. Terminal Functionality — See `docs/ADR/001-app-sandbox-vs-terminal-functionality.md`
-- **ADR-002**: MVVM Architecture with SwiftData — See `docs/ADR/002-mvvm-architecture-with-swiftdata.md`
+**Architectural Decisions**
+- Refer to `docs/ADR/` for detailed Architecture Decision Records:
+  - **ADR-001**: App Sandbox vs. Terminal Functionality
+  - **ADR-002**: MVVM Architecture with SwiftData
