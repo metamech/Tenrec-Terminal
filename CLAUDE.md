@@ -1,32 +1,65 @@
-# CLAUDE.md
+# Tenrec Terminal - Claude Code Configuration
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+SwiftUI-based macOS/iOS terminal application with SwiftData persistence and SwiftTerm v1.10.1+ engine.
 
-## Quick Start
+## Quick Reference
 
-**Tenrec Terminal**: SwiftUI-based macOS/iOS terminal application
+| Task | Command |
+|------|---------|
+| Build | `make build` |
+| Run | `make run` (build and launch) |
+| Test | `make test` |
+| Clean | `make clean` |
+| Help | `make help` |
 
-| Aspect | Details |
-|--------|---------|
-| UI Framework | SwiftUI |
-| Data Persistence | SwiftData |
-| Testing | Swift Testing (not XCTest) |
-| Terminal Engine | SwiftTerm v1.10.1+ |
-| Min Deployment | macOS 26.2, iOS 26.2 |
-| Build System | Xcode 26.2+ |
-| Repository | metamech/Tenrec-Terminal |
+## Tech Stack
 
-**Build & Test:**
-```bash
-make build    # Build the application
-make run      # Build and launch
-make test     # Run all tests
-make clean    # Clean build artifacts
-```
+| Component | Details |
+|-----------|---------|
+| **Language** | Swift |
+| **Platform** | macOS 26.2+, iOS 26.2+ |
+| **UI Framework** | SwiftUI |
+| **Persistence** | SwiftData |
+| **Testing** | Swift Testing (not XCTest) |
+| **Terminal Engine** | SwiftTerm v1.10.1+ |
+| **Build System** | Xcode 26.2+ |
+| **Repository** | metamech/Tenrec-Terminal |
 
-## Architecture
+## Development Workflow
 
-### Project Structure
+### Planning Phase
+
+1. Summarize relevant code and current behavior
+2. Ask clarifying questions with recommendations based on codebase conventions
+3. Propose phased plan—for each phase specify:
+   - Purpose and scope
+   - Files/functions to change
+   - Tests to add/update
+   - Recommended Claude model with rationale
+4. Note edge cases and performance considerations
+
+### GitHub Integration
+
+- Create/link issue before implementation
+- Treat issue technical details as "pseudo code guidance" unless marked as strict requirements
+- Update plan on issue if it diverges from description
+
+### Implementation Protocol
+
+- **Do not write code** until explicitly instructed
+- Create feature branch from `main` before Phase 0: `<type>/<issue-number>-<slug>`
+  - `<type>`: feature, bugfix, docs, refactor
+  - `<issue-number>`: GitHub issue number
+  - `<slug>`: short hyphenated description
+- **Before each phase**: Output phase number, recommended model, ask "Ready to proceed with Phase N?" then STOP
+- Implement one phase per response
+- Commit after each phase; prompt for next phase
+
+### Pre-Release Constraints
+
+⚠️ **Pre-release product**: No data migrations or legacy compatibility required.
+
+## Project Structure
 
 ```
 Tenrec Terminal/
@@ -43,14 +76,14 @@ Tenrec Terminal/
 └── Tenrec_TerminalApp.swift — App entry point
 ```
 
-### MVVM Pattern
+## MVVM Pattern
 
 - **Models** (`Models/`): SwiftData entities
 - **ViewModels** (`ViewModels/`): View-specific logic
 - **Views** (`Views/`): SwiftUI components, organized by feature
 - **Services** (`Services/`): Business logic, PTY handling, shell execution
 
-### Data Models
+## Data Models
 
 **TerminalSession** — SwiftData model in `Models/TerminalSession.swift`
 
@@ -67,7 +100,7 @@ Tenrec Terminal/
 - `inactive` — Session is paused or backgrounded
 - `terminated` — Session has ended
 
-### Key Patterns
+## Key Patterns
 
 **SwiftData Integration**
 - Models use `@Model` decorator for persistence
@@ -80,75 +113,35 @@ Tenrec Terminal/
 - UI tests use XCTest for automation
 - PoC validation tests ensure sandbox is disabled for terminal functionality
 
-## Development Workflow
-
-### 1. Planning Phase
-
-When starting a task:
-1. Summarize relevant code and current behavior
-2. Ask clarifying questions with recommendations based on codebase conventions
-3. Propose a phased plan. For each phase specify:
-   - Purpose and scope
-   - Files/functions to change
-   - Tests to add or update
-   - Recommended Claude model (opus/sonnet/haiku) with rationale
-4. Note edge cases and performance considerations where non-obvious
-
-**Before implementing**, enter plan mode and wait for explicit approval.
-
-### 2. GitHub Integration
-
-**If linked to an existing issue:**
-- Update the final plan on the issue if it diverges from the description
-- Treat technical details in the issue as "pseudo code guidance" (not hard requirements unless explicitly marked)
-
-**If no issue exists:**
-- Create one before implementation begins
-
-### 3. Implementation Phase
-
-**Branch & Commits:**
-- Create and checkout a feature branch from `main` before starting phase 0
-- Feature branch naming: `<type>/X-<slug>` where:
-  - `<type>` = issue type (feature, bugfix, docs, etc.)
-  - `X` = GitHub Issue number
-  - `<slug>` = short description
-- Commit after each phase
-
-**Phase Execution:**
-- **Before each phase** (including the first), output the phase number, recommended model, and ask: "Ready to proceed with Phase N? (switch to /model <X> if needed)" then **STOP**
-- Wait for explicit go-ahead before continuing
-- Implement only one phase per response
-- After committing a phase, stop and prompt for the next phase
-
-## Important Notes
-
 **Schema & Data**
-- SwiftData schema is defined in `Tenrec_TerminalApp` — changes to models must be reflected there
+- SwiftData schema is defined in `Tenrec_TerminalApp`—changes to models must be reflected there
 - Previews use in-memory data stores to avoid affecting real data during development
 - Model context is automatically provided by SwiftUI's environment
 
-**Pre-Release Constraints**
-- No data migrations or legacy compatibility needed
+## Architectural Decisions
 
-**Architectural Decisions**
-- Refer to `docs/ADR/` for detailed Architecture Decision Records:
-  - **ADR-001**: App Sandbox vs. Terminal Functionality
-  - **ADR-002**: MVVM Architecture with SwiftData
+Refer to `docs/ADR/` for detailed Architecture Decision Records:
+- **ADR-001**: App Sandbox vs. Terminal Functionality
+- **ADR-002**: MVVM Architecture with SwiftData
+
+## AI Agent Guidelines
+
+- NEVER include AI attribution in commit messages
+- Use GitHub MCP tools for issues/PRs (not manual commands)
+- Prefer specialized tools (Read, Edit, Grep) over Bash for file operations
 
 ## Maintenance
 
 Keep this file concise and token-efficient:
 - **Redundancy**: Remove duplicate explanations or alternative commands (keep one recommended approach)
-- **Organization**: Group similar information together; use tables for quick reference
-- **Clarity**: Preserve all critical guidance, but remove verbose prose
-- **Future Content**: Remove placeholder sections for "future" features or empty directories
+- **Organization**: Group similar information; use tables for quick reference
+- **Clarity**: Preserve critical guidance; remove verbose prose
+- **Future Content**: Remove placeholder sections for future features or empty directories
 
 Review this file when:
 - It exceeds 150 lines and contains 3+ similar sections
-- New technologies are adopted (update Quick Start table, Architecture sections)
-- Workflow or process changes (update Development Workflow section)
-- New architectural decisions are documented (reference in Architectural Decisions, not embedding)
+- New technologies are adopted (update tech stack/architecture sections)
+- Workflow or process changes (update Development Workflow)
+- New architectural decisions are documented (reference in docs/, not embed in CLAUDE.md)
 
-Token efficiency matters—every line in CLAUDE.md is loaded into Claude Code's system prompt
-on every interaction.
+Token efficiency matters—every line in CLAUDE.md is loaded into Claude Code's system prompt on every interaction.
