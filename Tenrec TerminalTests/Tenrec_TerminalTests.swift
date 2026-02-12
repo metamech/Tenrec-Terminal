@@ -10,8 +10,16 @@ import Testing
 
 struct Tenrec_TerminalTests {
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    @Test func testProcessExecution() async throws {
+        // Validate that Process execution works (sandbox disabled)
+        let output = ShellExecutionPoC.testProcessExecution()
+        #expect(output == "Hello from shell", "Process execution should succeed and return expected output")
+    }
+
+    @Test func testPTYAllocation() async throws {
+        // Validate that PTY allocation works (sandbox disabled)
+        let ptyAllocated = ShellExecutionPoC.testPTYAllocation()
+        #expect(ptyAllocated, "PTY allocation should succeed with sandbox disabled")
     }
 
 }
