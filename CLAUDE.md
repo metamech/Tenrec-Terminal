@@ -10,6 +10,7 @@ Tenrec Terminal is a SwiftUI-based macOS/iOS application using modern Apple fram
 - **Testing Framework:** Swift Testing (not XCTest)
 - **Minimum Deployment:** macOS 26.2, iOS 26.2
 - **Build System:** Xcode 26.2+
+- **GitHub:** metamech/Tenrec-Terminal
 
 ## Building and Running
 
@@ -73,8 +74,75 @@ xcodebuild test -scheme "Tenrec Terminal" -only-testing "Tenrec_TerminalUITests"
 - Tests use the modern `@Test` macro from the Swift Testing framework
 - UI tests inherit from the standard UITest structure
 
+
+## Planning
+
+1. Summarize relevant code and current behavior.
+2. Ask clarifying questions with recommendations based on codebase conventions.
+3. Propose a phased plan. For each phase specify:
+ - Purpose and scope
+ - Files/functions to change
+ - Tests to add or update
+ - Recommended Claude model (opus/sonnet/haiku) with rationale
+4. Note edge cases and performance considerations where non-obvious.
+
+## GitHub Integration
+
+- If linked to an existing issue:
+  - update the final plan on the issue when it diverges from the description
+  - technical details in the issue are "pseudo code guidance" and not hard requirements unless explicitly declared as a strict requirement
+- If no issue exists, create one before implementation begins.
+
+## Implementation Protocol
+
+- Do not write code until I say "implement."
+- Create and checkout a feature branch from `main` before starting in a "phase 0".
+- feature branch naming convention "<type>/X-<slug>" where `<type>` is issue/task type (feature, bugfix, docs, etc), `X` is the GitHub Issue number, and `<slug>` is a short description/title.
+- Commit after each phase.
+- **Before starting each phase** (including the first), output the phase number, its recommended model, and ask: "Ready to proceed with Phase N? (switch to /model <X> if needed)" then STOP and wait for my explicit go-ahead. Do NOT continue until I respond.
+- Only implement one phase per response. After committing a phase, stop and prompt me for the next phase.
+
+## Constraints
+
+- Pre-release: no data migrations or legacy compatibility needed.
+
 ## Important Notes
 
 - SwiftData schema is defined in `Tenrec_TerminalApp` — changes to models should be reflected there
 - Previews use in-memory data stores to avoid affecting real data during development
 - The model context is automatically provided by SwiftUI's environment
+
+## Architectural Decisions
+
+### ADR-001: App Sandbox vs. Terminal Functionality
+
+**Decision:** Disable macOS App Sandbox; enable Hardened Runtime for code signing and notarization.
+
+**Context:**
+Terminal emulator functionality requires PTY allocation (`posix_openpt()`) and unrestricted shell process execution. The macOS App Sandbox blocks both operations. We evaluated four approaches:
+
+1. **Disable Sandbox** — ✅ Viable, industry standard, low complexity
+2. **XPC + SMAppService Helper** — ⚠️ Insufficient (sandboxed main app cannot access PTY devices)
+3. **NSTask + Sandbox Exceptions** — ❌ No public entitlements exist for these operations
+4. **Keep Sandbox** — ❌ Contradicts core terminal functionality
+
+Every major macOS terminal emulator (Terminal.app, iTerm2, Warp, CodeEdit, Alacritty, kitty) disables the sandbox. SwiftTerm documentation explicitly states: "You will generally want to disable the sandbox."
+
+**Decision Rationale:**
+- Only viable technical path to full terminal functionality
+- Industry standard practice across all shipping terminal emulators
+- Clear precedent and documentation
+- Hardened Runtime + code signing + notarization provide security equivalent to sandboxed apps
+- No XPC/IPC complexity needed; straightforward implementation
+
+**Consequences:**
+- ❌ App ineligible for Mac App Store
+- ✅ Direct distribution via website or Homebrew
+- ✅ Sparkle framework for automatic updates
+- ✅ Code signing and notarization required
+- ✅ Full terminal functionality: PTY allocation, shell execution, I/O redirection
+
+**See Also:**
+- `docs/sandbox-research.md` — Detailed research and comparison of all four approaches
+- `ShellExecutionPoC.swift` — PoC validation of PTY and shell execution
+- `Tenrec_TerminalTests.swift` — Tests validating functionality works
