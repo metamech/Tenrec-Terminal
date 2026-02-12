@@ -1,0 +1,57 @@
+# Xcode
+build/
+DerivedData/
+*.pbxuser
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/xcshareddata/
+*.resolved
+
+# Build products
+*.app
+*.framework
+*.dSYM
+*.swiftmodule
+*.o
+*.a
+*.so
+
+# Testing
+*.xctest
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Swift Package Manager
+.build/
+.swiftpm/
+*.xcarchive
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+ehthumbs.db
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS-specific
+Thumbs.db
+*.log
