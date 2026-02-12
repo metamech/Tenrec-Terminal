@@ -133,55 +133,7 @@ Tenrec Terminal/
 
 ## Architectural Decisions
 
-### ADR-001: App Sandbox vs. Terminal Functionality
+Architecture Decision Records (ADRs) document important design decisions, their context, rationale, and consequences. Refer to the documents in `docs/ADR/` for full details.
 
-**Decision:** Disable macOS App Sandbox; enable Hardened Runtime for code signing and notarization.
-
-**Context:**
-Terminal emulator functionality requires PTY allocation (`posix_openpt()`) and unrestricted shell process execution. The macOS App Sandbox blocks both operations. We evaluated four approaches:
-
-1. **Disable Sandbox** — ✅ Viable, industry standard, low complexity
-2. **XPC + SMAppService Helper** — ⚠️ Insufficient (sandboxed main app cannot access PTY devices)
-3. **NSTask + Sandbox Exceptions** — ❌ No public entitlements exist for these operations
-4. **Keep Sandbox** — ❌ Contradicts core terminal functionality
-
-Every major macOS terminal emulator (Terminal.app, iTerm2, Warp, CodeEdit, Alacritty, kitty) disables the sandbox. SwiftTerm documentation explicitly states: "You will generally want to disable the sandbox."
-
-**Decision Rationale:**
-- Only viable technical path to full terminal functionality
-- Industry standard practice across all shipping terminal emulators
-- Clear precedent and documentation
-- Hardened Runtime + code signing + notarization provide security equivalent to sandboxed apps
-- No XPC/IPC complexity needed; straightforward implementation
-
-**Consequences:**
-- ❌ App ineligible for Mac App Store
-- ✅ Direct distribution via website or Homebrew
-- ✅ Sparkle framework for automatic updates
-- ✅ Code signing and notarization required
-- ✅ Full terminal functionality: PTY allocation, shell execution, I/O redirection
-
-**See Also:**
-- `docs/sandbox-research.md` — Detailed research and comparison of all four approaches
-- `Services/ShellExecutionPoC.swift` — PoC validation of PTY and shell execution
-- `Tenrec_TerminalTests.swift` — Tests validating functionality works
-
-### ADR-002: MVVM Architecture with SwiftData
-
-**Decision:** Use MVVM pattern with folder-based organization for scalability.
-
-**Context:**
-The project will grow to support multiple terminal sessions, custom themes, keybindings, and AI integration. Clear separation of concerns is essential for maintainability.
-
-**Decision Rationale:**
-- **Models/** — SwiftData entities, enums, and domain logic
-- **ViewModels/** — View-specific state management and business logic coordination
-- **Views/** — Pure SwiftUI views, organized by feature (`Terminal/`, `Settings/`, etc.)
-- **Services/** — Reusable business logic (PTY management, shell execution, AI interactions)
-- **Utilities/** — Helpers and extensions
-
-**Consequences:**
-- Clear boundaries between data, logic, and presentation
-- Easier testing (mock services, isolated view models)
-- Feature-based organization in Views/ for scalability
-- SwiftData schema centralized in app entry point
+- **ADR-001**: App Sandbox vs. Terminal Functionality — See `docs/ADR/001-app-sandbox-vs-terminal-functionality.md`
+- **ADR-002**: MVVM Architecture with SwiftData — See `docs/ADR/002-mvvm-architecture-with-swiftdata.md`
