@@ -8,71 +8,90 @@ Tenrec Terminal is a SwiftUI-based macOS/iOS application using modern Apple fram
 - **UI Framework:** SwiftUI
 - **Data Persistence:** SwiftData
 - **Testing Framework:** Swift Testing (not XCTest)
+- **Terminal Emulation:** SwiftTerm (v1.10.1+)
 - **Minimum Deployment:** macOS 26.2, iOS 26.2
 - **Build System:** Xcode 26.2+
 - **GitHub:** metamech/Tenrec-Terminal
 
 ## Building and Running
 
-**Build the app:**
+**Using Makefile (recommended):**
+```bash
+make build        # Build the application
+make run          # Build and launch the application
+make clean        # Clean build artifacts
+```
+
+**Using xcodebuild directly:**
 ```bash
 xcodebuild -scheme "Tenrec Terminal" -configuration Debug
-```
-
-**Run the app (macOS):**
-```bash
-xcodebuild -scheme "Tenrec Terminal" -configuration Debug -derivedDataPath build
-open build/Build/Products/Debug/Tenrec\ Terminal.app
-```
-
-**Build for release:**
-```bash
 xcodebuild -scheme "Tenrec Terminal" -configuration Release
 ```
 
 ## Testing
 
-**Run all tests:**
+**Using Makefile (recommended):**
+```bash
+make test         # Run all tests (unit + UI)
+```
+
+**Using xcodebuild directly:**
 ```bash
 xcodebuild test -scheme "Tenrec Terminal"
 ```
 
-**Run a specific test target:**
-```bash
-xcodebuild test -scheme "Tenrec Terminal" -only-testing "Tenrec_TerminalTests"
-```
-
-**Run UI tests:**
-```bash
-xcodebuild test -scheme "Tenrec Terminal" -only-testing "Tenrec_TerminalUITests"
-```
-
 ## Code Architecture
 
-### Structure
-- **Tenrec Terminal/** — Main app source code
-  - `Tenrec_TerminalApp.swift` — App entry point and SwiftData container setup
-  - `ContentView.swift` — Main UI with NavigationSplitView showing list and detail views
-  - `Item.swift` — SwiftData model for items (currently just a timestamp)
-- **Tenrec TerminalTests/** — Unit tests using Swift Testing framework
-- **Tenrec TerminalUITests/** — UI automation tests
+### MVVM Folder Structure
+```
+Tenrec Terminal/
+├── Models/              — SwiftData models
+│   └── TerminalSession.swift
+├── ViewModels/          — View models (future)
+├── Views/               — SwiftUI views
+│   ├── ContentView.swift
+│   └── Terminal/        — Terminal-specific views (future)
+├── Services/            — Business logic and utilities
+│   └── ShellExecutionPoC.swift
+├── Utilities/           — Helper utilities (future)
+├── Assets.xcassets/     — App icons and colors
+└── Tenrec_TerminalApp.swift — App entry point
+```
+
+### Data Models
+
+**TerminalSession** (`Models/TerminalSession.swift`)
+- SwiftData `@Model` for persisting terminal session state
+- Properties:
+  - `id: UUID` — Unique session identifier
+  - `name: String` — User-facing session name
+  - `createdAt: Date` — Session creation timestamp
+  - `status: SessionStatus` — Current session state (active/inactive/terminated)
+  - `workingDirectory: String` — Shell working directory (defaults to "~")
+
+**SessionStatus** (enum in `TerminalSession.swift`)
+- `active` — Session is running
+- `inactive` — Session is paused or backgrounded
+- `terminated` — Session has ended
 
 ### Key Architectural Patterns
 
 **SwiftData Integration:**
-- The `Item` model is decorated with `@Model` to make it a SwiftData entity
-- The app container is initialized in `Tenrec_TerminalApp` with a schema including `Item.self`
-- Data is persisted to disk by default (not in-memory)
+- Models use `@Model` decorator for SwiftData persistence
+- App container initialized in `Tenrec_TerminalApp` with schema
+- Data persisted to disk by default (not in-memory)
+- Previews use in-memory containers to avoid affecting real data
 
-**UI Architecture:**
-- `ContentView` uses `@Query` property wrapper to automatically fetch items from SwiftData
-- `@Environment(\.modelContext)` provides direct access to the model context for mutations
-- Changes to data are wrapped in `withAnimation` for smooth transitions
-- The preview uses an in-memory model container for testing the UI
+**MVVM Pattern:**
+- Models: SwiftData entities in `Models/`
+- ViewModels: Future view-specific logic in `ViewModels/`
+- Views: SwiftUI views in `Views/`, organized by feature
+- Services: Business logic, PTY handling, shell execution in `Services/`
 
 **Testing:**
-- Tests use the modern `@Test` macro from the Swift Testing framework
-- UI tests inherit from the standard UITest structure
+- Unit tests use Swift Testing framework (`@Test` macro)
+- UI tests use XCTest for automation
+- PoC validation tests ensure sandbox is disabled for terminal functionality
 
 
 ## Planning
@@ -144,5 +163,25 @@ Every major macOS terminal emulator (Terminal.app, iTerm2, Warp, CodeEdit, Alacr
 
 **See Also:**
 - `docs/sandbox-research.md` — Detailed research and comparison of all four approaches
-- `ShellExecutionPoC.swift` — PoC validation of PTY and shell execution
+- `Services/ShellExecutionPoC.swift` — PoC validation of PTY and shell execution
 - `Tenrec_TerminalTests.swift` — Tests validating functionality works
+
+### ADR-002: MVVM Architecture with SwiftData
+
+**Decision:** Use MVVM pattern with folder-based organization for scalability.
+
+**Context:**
+The project will grow to support multiple terminal sessions, custom themes, keybindings, and AI integration. Clear separation of concerns is essential for maintainability.
+
+**Decision Rationale:**
+- **Models/** — SwiftData entities, enums, and domain logic
+- **ViewModels/** — View-specific state management and business logic coordination
+- **Views/** — Pure SwiftUI views, organized by feature (`Terminal/`, `Settings/`, etc.)
+- **Services/** — Reusable business logic (PTY management, shell execution, AI interactions)
+- **Utilities/** — Helpers and extensions
+
+**Consequences:**
+- Clear boundaries between data, logic, and presentation
+- Easier testing (mock services, isolated view models)
+- Feature-based organization in Views/ for scalability
+- SwiftData schema centralized in app entry point

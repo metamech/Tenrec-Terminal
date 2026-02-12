@@ -5,14 +5,12 @@ SCHEME = "Tenrec Terminal"
 CONFIGURATION = Debug
 DERIVED_DATA_PATH = build
 
-.PHONY: help build test test-unit test-ui run clean
+.PHONY: help build test run clean
 
 help:
 	@echo "Tenrec Terminal - Available targets:"
 	@echo "  make build       - Build the application (Debug)"
 	@echo "  make test        - Run all tests (unit + UI)"
-	@echo "  make test-unit   - Run unit tests only"
-	@echo "  make test-ui     - Run UI tests only"
 	@echo "  make run         - Build and launch the application"
 	@echo "  make clean       - Clean build artifacts"
 
@@ -21,12 +19,6 @@ build:
 
 test:
 	xcodebuild test -scheme $(SCHEME)
-
-test-unit:
-	xcodebuild test -scheme $(SCHEME) -only-testing "Tenrec_TerminalTests"
-
-test-ui:
-	xcodebuild test -scheme $(SCHEME) -only-testing "Tenrec_TerminalUITests"
 
 run: build
 	@echo "Launching Tenrec Terminal..."
