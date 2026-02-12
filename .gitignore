@@ -55,3 +55,6 @@ Thumbs.db
 # OS-specific
 Thumbs.db
 *.log
+
+# prclean script output
+.prclean-summary.txt
