@@ -112,6 +112,7 @@
 			);
 			name = "Tenrec Terminal";
 			packageProductDependencies = (
+				5330C544B76CFDEAD50B129A /* SwiftTerm */,
 			);
 			productName = "Tenrec Terminal";
 			productReference = FDE033192F3D7236006B5FF1 /* Tenrec Terminal.app */;
@@ -195,6 +196,9 @@
 			);
 			mainGroup = FDE033102F3D7236006B5FF1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				7AD001C2BE2CB3C643470D0F /* XCRemoteSwiftPackageReference "SwiftTerm" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = FDE0331A2F3D7236006B5FF1 /* Products */;
 			projectDirPath = "";
@@ -398,6 +402,7 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_SOURCE_FILE_NAMES = .gitkeep;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -428,6 +433,7 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_SOURCE_FILE_NAMES = .gitkeep;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -563,6 +569,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7AD001C2BE2CB3C643470D0F /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.10.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5330C544B76CFDEAD50B129A /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7AD001C2BE2CB3C643470D0F /* XCRemoteSwiftPackageReference "SwiftTerm" */;
+			productName = SwiftTerm;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = FDE033112F3D7236006B5FF1 /* Project object */;
 }
