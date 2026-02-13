@@ -28,5 +28,7 @@ struct Tenrec_TerminalApp: App {
             ContentView()
         }
         .modelContainer(sharedModelContainer)
+        .defaultSize(width: 1000, height: 700)
+        .windowResizability(.contentMinSize)
     }
 }
