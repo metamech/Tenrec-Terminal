@@ -3,14 +3,25 @@ import SwiftData
 
 struct ContentView: View {
     @State private var viewModel = SidebarViewModel()
+    @State private var inspectorVisible = false
 
     var body: some View {
         NavigationSplitView {
             SidebarView(viewModel: viewModel)
-        } content: {
-            ContentPaneView(selection: viewModel.selection)
         } detail: {
-            DetailPaneView(selection: viewModel.selection)
+            ContentPaneView(selection: viewModel.selection)
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button(action: {
+                            inspectorVisible.toggle()
+                        }) {
+                            Label("Toggle Inspector", systemImage: "sidebar.right")
+                        }
+                    }
+                }
+                .inspector(isPresented: $inspectorVisible) {
+                    DetailPaneView(selection: viewModel.selection)
+                }
         }
         .frame(minWidth: 900, minHeight: 600)
     }

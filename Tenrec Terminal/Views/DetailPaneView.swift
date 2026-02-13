@@ -72,7 +72,7 @@ struct DetailPaneView: View {
                 )
             }
         }
-        .navigationSplitViewColumnWidth(min: 250, ideal: 300)
+        .inspectorColumnWidth(min: 250, ideal: 300)
         .navigationTitle("Inspector")
     }
 }
