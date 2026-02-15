@@ -42,6 +42,10 @@ struct TerminalViewWrapper: NSViewRepresentable {
         // No updates needed from SwiftUI side — terminal manages its own state
     }
 
+    static func dismantleNSView(_ nsView: LocalProcessTerminalView, coordinator: Coordinator) {
+        nsView.terminate()
+    }
+
     // MARK: - Coordinator
 
     class Coordinator: NSObject, LocalProcessTerminalViewDelegate {
