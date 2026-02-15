@@ -4,6 +4,7 @@ import SwiftData
 struct SidebarView: View {
     @Bindable var viewModel: SidebarViewModel
     @Query private var sessions: [TerminalSession]
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         List(selection: $viewModel.selection) {
@@ -34,13 +35,17 @@ struct SidebarView: View {
         .navigationSplitViewColumnWidth(min: 200, ideal: 250)
         .toolbar {
             ToolbarItem {
-                Button(action: {
-                    // Stub: New terminal action will be implemented later
-                }) {
+                Button(action: createNewTerminal) {
                     Label("New Terminal", systemImage: "plus")
                 }
             }
         }
+    }
+
+    private func createNewTerminal() {
+        let session = TerminalSession(name: "Terminal")
+        modelContext.insert(session)
+        viewModel.selection = .terminal(session.id)
     }
 }
 
