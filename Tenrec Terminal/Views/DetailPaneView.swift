@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct DetailPaneView: View {
     let selection: SidebarSelection?
@@ -7,24 +8,7 @@ struct DetailPaneView: View {
         Group {
             switch selection {
             case .terminal(let id):
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Terminal Inspector")
-                        .font(.headline)
-
-                    Divider()
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Session ID")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text(id.uuidString)
-                            .font(.system(.caption, design: .monospaced))
-                    }
-
-                    Spacer()
-                }
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                TerminalInspectorView(sessionID: id)
 
             case .prompt(let name):
                 VStack(alignment: .leading, spacing: 16) {
@@ -91,4 +75,104 @@ struct DetailPaneView: View {
 
 #Preview("No Selection") {
     DetailPaneView(selection: nil)
+}
+
+// MARK: - Terminal Inspector View
+
+struct TerminalInspectorView: View {
+    let sessionID: UUID
+
+    @Environment(\.modelContext) private var modelContext
+    @State private var session: TerminalSession?
+
+    var body: some View {
+        Group {
+            if let session {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Terminal Inspector")
+                        .font(.headline)
+
+                    Divider()
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Name")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(session.name)
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Status")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(session.status.rawValue.capitalized)
+                            .foregroundStyle(statusColor(for: session.status))
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Working Directory")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(session.workingDirectory)
+                            .font(.system(.caption, design: .monospaced))
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Created")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(session.createdAt, style: .relative)
+                            .font(.caption)
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Session ID")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(session.id.uuidString)
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundStyle(.tertiary)
+                    }
+
+                    Spacer()
+                }
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            } else {
+                ContentUnavailableView(
+                    "Session Not Found",
+                    systemImage: "exclamationmark.triangle",
+                    description: Text("The terminal session could not be loaded")
+                )
+            }
+        }
+        .task(id: sessionID) {
+            fetchSession()
+        }
+    }
+
+    private func fetchSession() {
+        let fetchDescriptor = FetchDescriptor<TerminalSession>(
+            predicate: #Predicate { $0.id == sessionID }
+        )
+
+        do {
+            let sessions = try modelContext.fetch(fetchDescriptor)
+            session = sessions.first
+        } catch {
+            print("Failed to fetch session: \(error)")
+            session = nil
+        }
+    }
+
+    private func statusColor(for status: SessionStatus) -> Color {
+        switch status {
+        case .active:
+            return .green
+        case .inactive:
+            return .orange
+        case .terminated:
+            return .red
+        }
+    }
 }
