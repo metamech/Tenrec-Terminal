@@ -1,10 +1,11 @@
 # Tenrec Terminal — Progress
 
-## Overall Status: Phase 2 Complete
+## Overall Status: Phase 2 Merged, Phase 3 Starting
 
 **Pre-1.0 Foundation** (Issues #1-4): Complete — single working terminal with 3-pane layout.
 **Phase 1** (Issue #5): Complete — multi-session terminal lifecycle merged (PR #24).
-**Phase 2**: Complete — terminal profiles, themes & search (PR #25).
+**Phase 2**: Complete — terminal profiles, themes & search (PR #25, merged 2026-02-20).
+**Phase 3**: In progress — shell integration & buffer monitoring.
 
 ## Phase Progress
 
@@ -13,7 +14,7 @@
 | 0 | Foundation (Issues #1-4) | Done | [PROGRESS_PHASE_0.md](PROGRESS_PHASE_0.md) |
 | 1 | Multi-Session Terminal Lifecycle | Done | [PROGRESS_PHASE_1.md](PROGRESS_PHASE_1.md) |
 | 2 | Terminal Profiles, Themes & Search | Done | [PROGRESS_PHASE_2.md](PROGRESS_PHASE_2.md) |
-| 3 | Shell Integration & Buffer Monitoring | Not Started | [PROGRESS_PHASE_3.md](PROGRESS_PHASE_3.md) |
+| 3 | Shell Integration & Buffer Monitoring | In Progress | [PROGRESS_PHASE_3.md](PROGRESS_PHASE_3.md) |
 | 4 | Prompts & Templates | Not Started | [PROGRESS_PHASE_4.md](PROGRESS_PHASE_4.md) |
 | 5 | Claude Code Integration Foundation | Not Started | [PROGRESS_PHASE_5.md](PROGRESS_PHASE_5.md) |
 | 6 | Claude Code Session Intelligence | Not Started | [PROGRESS_PHASE_6.md](PROGRESS_PHASE_6.md) |

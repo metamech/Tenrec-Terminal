@@ -6,6 +6,27 @@ import SwiftData
 class TerminalSessionViewModel {
     private let session: TerminalSession
 
+    // MARK: - Shell Integration / Buffer State
+
+    /// Observable buffer state published by BufferMonitorService for this session.
+    /// Created once and retained for the lifetime of the view model.
+    @MainActor
+    let bufferState = TerminalBufferState()
+
+    // MARK: - Convenience Accessors (buffer state pass-through)
+
+    /// True when the buffer scanner has detected a prompt awaiting user input.
+    @MainActor
+    var hasPendingInput: Bool { bufferState.hasPendingInput }
+
+    /// Text of the detected prompt, if any.
+    @MainActor
+    var pendingPromptText: String? { bufferState.pendingPromptText }
+
+    /// Most recently completed command recorded via shell integration.
+    @MainActor
+    var lastCommand: CommandRecord? { bufferState.lastCommand }
+
     init(session: TerminalSession) {
         self.session = session
     }

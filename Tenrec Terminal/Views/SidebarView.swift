@@ -21,7 +21,8 @@ struct SidebarView: View {
                 ForEach(sessions) { session in
                     SessionRow(
                         session: session,
-                        terminalManager: terminalManager
+                        terminalManager: terminalManager,
+                        hasPendingInput: terminalManager.sessionsPendingInput.contains(session.id)
                     )
                 }
             }
@@ -73,6 +74,7 @@ struct SidebarView: View {
 private struct SessionRow: View {
     let session: TerminalSession
     let terminalManager: TerminalManagerViewModel
+    var hasPendingInput: Bool = false
 
     @State private var isRenaming = false
     @State private var renameText = ""
@@ -108,6 +110,15 @@ private struct SessionRow: View {
                     Circle()
                         .fill(colorTagColor(tag))
                         .frame(width: 8, height: 8)
+                }
+
+                // Pending-input badge: orange dot when the buffer monitor has
+                // detected a prompt awaiting user input in this session.
+                if hasPendingInput {
+                    Circle()
+                        .fill(Color.orange)
+                        .frame(width: 6, height: 6)
+                        .help("Prompt is waiting for input")
                 }
             }
         }

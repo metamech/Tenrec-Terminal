@@ -134,12 +134,14 @@ struct TerminalContainerView: NSViewRepresentable {
         let container = NSView()
         container.wantsLayer = true
         context.coordinator.container = container
+        context.coordinator.terminalManager = terminalManager
         return container
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
         let coordinator = context.coordinator
         coordinator.searchBridge = searchBridge
+        coordinator.terminalManager = terminalManager
 
         guard let activeID = terminalManager.activeSessionId else {
             // No active session — hide all views
@@ -192,17 +194,24 @@ struct TerminalContainerView: NSViewRepresentable {
     // MARK: - Coordinator
 
     final class Coordinator {
-        /// Pairs a SwiftTerm view with its TerminalSessionViewModel delegate holder.
+        /// Pairs a SwiftTerm view with its TerminalSessionViewModel delegate holder
+        /// and the Phase 3 shell-integration services.
         struct TerminalEntry {
             let terminalView: LocalProcessTerminalView
             let sessionViewModel: TerminalSessionViewModel
             let delegateHolder: TerminalDelegateHolder
+            let bufferMonitor: BufferMonitorService
+            let shellIntegration: ShellIntegrationService
         }
 
         var container: NSView?
         var terminalViews: [UUID: TerminalEntry] = [:]
         var activeTerminalView: LocalProcessTerminalView?
         var searchBridge: SearchBridge?
+
+        /// Weak reference to the manager so the Coordinator can publish
+        /// `sessionsPendingInput` changes without a retain cycle.
+        weak var terminalManager: TerminalManagerViewModel?
 
         func createTerminalView(for session: TerminalSession, profile: TerminalProfile?, in container: NSView) {
             let sessionViewModel = TerminalSessionViewModel(session: session)
@@ -238,11 +247,112 @@ struct TerminalContainerView: NSViewRepresentable {
 
             container.addSubview(terminalView)
 
+            // MARK: Phase 3 — Shell Integration Services
+
+            // bufferState is @MainActor; capture it here on the main thread.
+            let bufferState = sessionViewModel.bufferState
+            let sessionID = session.id
+
+            // BufferMonitorService: scans the last visible terminal rows for prompts.
+            let bufferMonitor = BufferMonitorService(bufferState: bufferState)
+
+            // Buffer reader closure: reads the last 10 visible lines from SwiftTerm.
+            // Captured weakly to avoid retaining the terminal view after removal.
+            let bufferReader: @Sendable () -> [String] = { [weak terminalView] in
+                guard let tv = terminalView else { return [] }
+                // SwiftTerm's Terminal is not Sendable; access on the main thread only.
+                return DispatchQueue.main.sync {
+                    guard let terminal = tv.terminal else { return [] }
+                    let rows = terminal.rows
+                    let startRow = max(0, rows - 10)
+                    var lines: [String] = []
+                    for row in startRow..<rows {
+                        if let line = terminal.getLine(row: row) {
+                            lines.append(line.translateToString())
+                        }
+                    }
+                    return lines
+                }
+            }
+
+            // ShellIntegrationService: parses OSC 133 sequences fed explicitly.
+            // Event handler fires on @MainActor and forwards to bufferState / manager.
+            let shellIntegration = ShellIntegrationService(
+                onEvent: { [weak bufferState, weak terminalManager] event in
+                    guard let bufferState else { return }
+                    switch event {
+                    case .commandFinished(let exitCode):
+                        let record = CommandRecord(exitCode: exitCode)
+                        bufferState.recordCommand(record)
+                        // Clear pending-input badge once the command finishes.
+                        terminalManager?.sessionsPendingInput.remove(sessionID)
+                    case .promptStarted:
+                        // Prompt appeared — the buffer monitor will set hasPendingInput
+                        // once it scans the next tick. Register eagerly here too.
+                        terminalManager?.sessionsPendingInput.insert(sessionID)
+                    case .commandStarted, .commandOutputStarted:
+                        // Command running — no longer waiting for input.
+                        terminalManager?.sessionsPendingInput.remove(sessionID)
+                    }
+                }
+            )
+
+            // Wire up the buffer reader and start scanning.
+            Task {
+                await bufferMonitor.setBufferReader(bufferReader)
+                await bufferMonitor.startMonitoring()
+            }
+
+            // Observe hasPendingInput changes and mirror them into the manager set.
+            // withObservationTracking fires synchronously for the first read and again
+            // each time any accessed observable property changes.
+            observePendingInput(
+                bufferState: bufferState,
+                sessionID: sessionID
+            )
+
             terminalViews[session.id] = TerminalEntry(
                 terminalView: terminalView,
                 sessionViewModel: sessionViewModel,
-                delegateHolder: delegateHolder
+                delegateHolder: delegateHolder,
+                bufferMonitor: bufferMonitor,
+                shellIntegration: shellIntegration
             )
+        }
+
+        /// Watches `bufferState.hasPendingInput` via recursive `withObservationTracking`
+        /// and keeps `terminalManager.sessionsPendingInput` in sync.
+        private func observePendingInput(
+            bufferState: TerminalBufferState,
+            sessionID: UUID
+        ) {
+            // withObservationTracking must run on @MainActor because TerminalBufferState is @MainActor.
+            Task { @MainActor [weak self] in
+                self?.trackPendingInput(bufferState: bufferState, sessionID: sessionID)
+            }
+        }
+
+        @MainActor
+        private func trackPendingInput(
+            bufferState: TerminalBufferState,
+            sessionID: UUID
+        ) {
+            withObservationTracking {
+                // Access the property so the tracking system registers the dependency.
+                let pending = bufferState.hasPendingInput
+                if pending {
+                    terminalManager?.sessionsPendingInput.insert(sessionID)
+                } else {
+                    terminalManager?.sessionsPendingInput.remove(sessionID)
+                }
+            } onChange: { [weak self] in
+                // Schedule the next observation turn on the next main-actor iteration.
+                Task { @MainActor [weak self] in
+                    // Only re-subscribe if this entry still exists (session not removed).
+                    guard let self, self.terminalViews[sessionID] != nil else { return }
+                    self.trackPendingInput(bufferState: bufferState, sessionID: sessionID)
+                }
+            }
         }
 
         /// Applies a TerminalProfile's font, colors, and cursor style to a live terminal view.
@@ -279,6 +389,10 @@ struct TerminalContainerView: NSViewRepresentable {
 
         func removeTerminalView(for id: UUID) {
             guard let entry = terminalViews[id] else { return }
+            // Stop buffer scanning before tearing down the terminal view so the
+            // reader closure does not race against the view being deallocated.
+            Task { await entry.bufferMonitor.stopMonitoring() }
+            terminalManager?.sessionsPendingInput.remove(id)
             entry.terminalView.terminate()
             entry.terminalView.removeFromSuperview()
             terminalViews.removeValue(forKey: id)

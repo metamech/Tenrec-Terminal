@@ -9,6 +9,10 @@ class TerminalManagerViewModel {
 
     var activeSessionId: UUID?
 
+    /// Sessions that currently have a detected prompt awaiting user input.
+    /// Updated by the Coordinator as BufferMonitorService emits state changes.
+    var sessionsPendingInput: Set<UUID> = []
+
     // Search state — read by ContentPaneView to update match count
     var lastSearchText: String = ""
 
