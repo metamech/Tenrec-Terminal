@@ -1,0 +1,18 @@
+{
+  "name": "Monokai",
+  "fontFamily": "Menlo",
+  "fontSize": 13.0,
+  "foregroundColor": "#F8F8F2",
+  "backgroundColor": "#272822",
+  "cursorColor": "#F8F8F2",
+  "cursorStyle": "block",
+  "selectionColor": "#49483E99",
+  "ansiColors": [
+    "#272822", "#F92672", "#A6E22E", "#F4BF75",
+    "#66D9EF", "#AE81FF", "#A1EFE4", "#F8F8F2",
+    "#75715E", "#F92672", "#A6E22E", "#F4BF75",
+    "#66D9EF", "#AE81FF", "#A1EFE4", "#F9F8F5"
+  ],
+  "opacity": 1.0,
+  "isBuiltIn": true
+}

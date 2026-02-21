@@ -13,6 +13,7 @@ struct Tenrec_TerminalApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             TerminalSession.self,
+            TerminalProfile.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -26,9 +27,26 @@ struct Tenrec_TerminalApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    seedDefaultProfilesIfNeeded()
+                }
         }
         .modelContainer(sharedModelContainer)
         .defaultSize(width: 1000, height: 700)
         .windowResizability(.contentMinSize)
+
+        // macOS Settings window (Cmd+,)
+        Settings {
+            PreferencesView()
+                .modelContainer(sharedModelContainer)
+        }
+    }
+
+    // MARK: - Profile Seeding
+
+    private func seedDefaultProfilesIfNeeded() {
+        let context = sharedModelContainer.mainContext
+        let vm = TerminalProfileViewModel(modelContext: context)
+        vm.seedDefaultProfilesIfNeeded()
     }
 }
