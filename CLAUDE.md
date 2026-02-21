@@ -89,6 +89,7 @@ Use subagents for large refactors or multi-step features:
 - Create a feature branch before any implementation: `<type>/<issue-number>-<slug>`.
 - Before each phase, output phase number + recommended model, ask "Ready to proceed?" then STOP.
 - Commit after each phase; prompt for the next.
+- After completing a phase: update `PROGRESS.md` and `PROGRESS_PHASE_N.md` status before committing.
 
 ## Quality Gates (Pre-Commit)
 
