@@ -100,6 +100,15 @@ private struct SessionRow: View {
                             startRenaming()
                         }
                 }
+
+                Spacer(minLength: 0)
+
+                // Color tag dot (shown when a tag is set)
+                if let tag = session.colorTag, tag != "none", tag != "" {
+                    Circle()
+                        .fill(colorTagColor(tag))
+                        .frame(width: 8, height: 8)
+                }
             }
         }
         .contextMenu {
@@ -110,6 +119,30 @@ private struct SessionRow: View {
                     terminalManager.closeSession(id: session.id)
                 } else {
                     showCloseConfirmation = true
+                }
+            }
+
+            Divider()
+
+            // Color tag submenu
+            Menu("Color Tag") {
+                ForEach(ColorTag.allCases) { tag in
+                    Button {
+                        terminalManager.setColorTag(
+                            id: session.id,
+                            tag: tag == .none ? nil : tag.rawValue
+                        )
+                    } label: {
+                        HStack {
+                            if tag != .none {
+                                Image(systemName: "circle.fill")
+                                    .foregroundStyle(tag.color)
+                            } else {
+                                Image(systemName: "circle")
+                            }
+                            Text(tag.displayName)
+                        }
+                    }
                 }
             }
 
@@ -138,6 +171,10 @@ private struct SessionRow: View {
         }
     }
 
+    private func colorTagColor(_ tag: String) -> Color {
+        ColorTag(rawValue: tag)?.color ?? .clear
+    }
+
     private func startRenaming() {
         renameText = session.name
         isRenaming = true
@@ -162,20 +199,57 @@ private struct SessionRow: View {
     }
 }
 
+// MARK: - ColorTag
+
+enum ColorTag: String, CaseIterable, Identifiable {
+    case none    = "none"
+    case red     = "red"
+    case orange  = "orange"
+    case yellow  = "yellow"
+    case green   = "green"
+    case blue    = "blue"
+    case purple  = "purple"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .none:   return "None"
+        case .red:    return "Red"
+        case .orange: return "Orange"
+        case .yellow: return "Yellow"
+        case .green:  return "Green"
+        case .blue:   return "Blue"
+        case .purple: return "Purple"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .none:   return .clear
+        case .red:    return .red
+        case .orange: return .orange
+        case .yellow: return .yellow
+        case .green:  return .green
+        case .blue:   return .blue
+        case .purple: return .purple
+        }
+    }
+}
+
 // MARK: - Preview
 
 #Preview {
+    let container = try! ModelContainer(
+        for: TerminalSession.self, TerminalProfile.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
     NavigationSplitView {
         SidebarView(
             viewModel: SidebarViewModel(),
-            terminalManager: TerminalManagerViewModel(
-                modelContext: try! ModelContainer(
-                    for: TerminalSession.self,
-                    configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-                ).mainContext
-            )
+            terminalManager: TerminalManagerViewModel(modelContext: container.mainContext)
         )
-        .modelContainer(for: TerminalSession.self, inMemory: true)
+        .modelContainer(container)
     } detail: {
         Text("Detail")
     }

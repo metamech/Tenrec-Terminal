@@ -16,6 +16,7 @@ final class TerminalSession {
     var status: SessionStatus
     var workingDirectory: String
     var colorTag: String?
+    var profileId: UUID?
 
     init(name: String, workingDirectory: String = "~") {
         self.id = UUID()
@@ -25,5 +26,6 @@ final class TerminalSession {
         self.status = .active
         self.workingDirectory = workingDirectory
         self.colorTag = nil
+        self.profileId = nil
     }
 }

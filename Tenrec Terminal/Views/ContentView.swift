@@ -122,5 +122,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: TerminalSession.self, inMemory: true)
+        .modelContainer(for: [TerminalSession.self, TerminalProfile.self], inMemory: true)
 }
